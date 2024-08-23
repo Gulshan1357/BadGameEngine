@@ -1,2 +1,12 @@
 # Visual Studio 2015 user specific files
 .vs/
+
+# directories
+2dGameEngine/x64/*
+x64/*
+
+# Compiled Object files
+*.obj
+
+# Executables
+*.exe
