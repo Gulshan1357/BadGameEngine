@@ -1,10 +1,12 @@
 #pragma once
+#include <memory>
 
 const int FPS = 60;
 const int MILLISECS_PER_FRAME = 1000 / FPS;
 
 class SDL_Window;
 class SDL_Renderer;
+class Registry;
 
 class Game
 {
@@ -13,6 +15,8 @@ private:
 	int millisecsPreviousFrame;
 	SDL_Window* window;
 	SDL_Renderer* renderer;
+
+	std::unique_ptr<Registry> registry;
 
 public:
 	Game();

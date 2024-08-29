@@ -1,6 +1,8 @@
 #include "Game.h"
 #include "../Logger/Logger.h"
 #include "../ECS/ECS.h"
+#include "../Components/TransformComponent.h"
+#include "../Components/RigidBodyComponent.h"
 #include "SDL.h"
 #include "SDL_image.h"
 #include <glm/glm.hpp>
@@ -9,6 +11,7 @@
 Game::Game()
 {
 	isRunning = false;
+	registry = std::make_unique<Registry>();
 	Logger::Log("Game constructor called");
 }
 
@@ -80,11 +83,14 @@ void Game::ProcessInput()
 
 void Game::Setup() // Equivalaent to Unity's start function
 {
-	// ToDo:
-	// Entity tank = registry.CreateEntity();
-	// tank.AddComponent<TransformCOmponent>();
-	// tank.AddComponent<BoxCollierComponnet>();
-	// tank.AddComponent<SpriteComponent>("./assets/images/tank.png");
+	// Create some entities
+	Entity tank = registry->CreateEntity();
+
+	//Add some components to that entity
+	tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0.0);
+	tank.AddComponent<RigidBodyComponent>(glm::vec2(50.0, 0.0));
+
+	tank.RemoveComponent<TransformComponent>();
 }
 
 void Game::Update()

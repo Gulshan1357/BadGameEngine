@@ -1,7 +1,8 @@
 #include "ECS.h"
 #include "../Logger/Logger.h"
-//#include <string>
-// Todo: Implement functions from ECH.h
+
+// Allocating memory for the static variable
+int IComponent::nextId = 0;
 
 int Entity::GetId() const
 {
@@ -39,7 +40,14 @@ Entity Registry::CreateEntity()
 	entityId = numEntities++;
 
 	Entity entity(entityId);
+	entity.registry = this;
 	entitiesToBeAdded.insert(entity);
+
+	// Make sure the entityComponentSignatures vector can accomodate the new entity
+	if (entityId >= entityComponentSignatures.size())
+	{
+		entityComponentSignatures.resize(entityId + 1);
+	}
 
 	Logger::Log("Entity created with id = " + std::to_string(entityId));
 	return entity;
@@ -66,6 +74,13 @@ void Registry::AddEntityToSystems(Entity entity)
 
 void Registry::Update()
 {
-	// ToDo: Add the entities that are waiting to be created to the active System
+	// Add the entities that are waiting to be created to the active System
+	for (auto entity : entitiesToBeAdded)
+	{
+		AddEntityToSystems(entity);
+	}
+	entitiesToBeAdded.clear();
+
+
 	// ToDo: Remove the entities that are waiting to be killed from the active system
 }
