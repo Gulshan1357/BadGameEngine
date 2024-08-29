@@ -10,3 +10,6 @@ x64/*
 
 # Executables
 *.exe
+
+# Additional common Visual Studio files
+*.pdb
