@@ -321,5 +321,5 @@ bool Entity::HasComponent() const
 template <typename TComponent>
 TComponent& Entity::GetComponent() const
 {
-	return registry->HasComponent<TComponent>(*this);
+	return registry->GetComponent<TComponent>(*this);
 }
