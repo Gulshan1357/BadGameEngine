@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>D:\Projects\gEng\2dGameEngine\2dGameEngine\libs;C:\sdl2\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Projects\gEng\2dGameEngine\2dGameEngine\libs\lua;C:\sdl2\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Projects\gEng\BadGameEngine\2dGameEngine\libs;C:\sdl2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Projects\gEng\BadGameEngine\2dGameEngine\libs\lua;C:\sdl2\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -139,6 +139,7 @@
     <ClCompile Include="libs\imgui\imgui_draw.cpp" />
     <ClCompile Include="libs\imgui\imgui_sdl.cpp" />
     <ClCompile Include="libs\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\AssetStore\AssetStore.cpp" />
     <ClCompile Include="src\ECS\ECS.cpp" />
     <ClCompile Include="src\Game\Game.cpp" />
     <ClCompile Include="src\Logger\Logger.cpp" />
@@ -399,12 +400,20 @@
     <ClInclude Include="libs\lua\luaconf.h" />
     <ClInclude Include="libs\lua\lualib.h" />
     <ClInclude Include="libs\sol\sol.hpp" />
+    <ClInclude Include="src\AssetStore\AssetStore.h" />
+    <ClInclude Include="src\Components\AnimationComponent.h" />
+    <ClInclude Include="src\Components\BoxColliderComponent.h" />
     <ClInclude Include="src\Components\RigidBodyComponent.h" />
+    <ClInclude Include="src\Components\SpriteComponent.h" />
     <ClInclude Include="src\Components\TransformComponent.h" />
     <ClInclude Include="src\ECS\ECS.h" />
     <ClInclude Include="src\Game\Game.h" />
     <ClInclude Include="src\Logger\Logger.h" />
+    <ClInclude Include="src\Systems\AnimationSystem.h" />
+    <ClInclude Include="src\Systems\CollisionSystem.h" />
     <ClInclude Include="src\Systems\MovementSystem.h" />
+    <ClInclude Include="src\Systems\RenderColliderSystem.h" />
+    <ClInclude Include="src\Systems\RenderSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="libs\glm\detail\func_common.inl" />

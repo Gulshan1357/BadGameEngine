@@ -5,8 +5,13 @@
 #include "../Components/TransformComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
+#include "../Components/AnimationComponent.h"
+#include "../Components/BoxColliderComponent.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
+#include "../Systems/AnimationSystem.h"
+#include "../Systems/CollisionSystem.h"
+#include "../Systems/RenderColliderSystem.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <glm/glm.hpp>
@@ -16,6 +21,7 @@
 Game::Game()
 {
 	isRunning = false;
+	isDebug = false;
 	registry = std::make_unique<Registry>();
 	assetStore = std::make_unique<AssetStore>();
 	Logger::Log("Game constructor called");
@@ -35,8 +41,8 @@ void Game::Initialize()
 	}
 	SDL_DisplayMode displayMode;
 	SDL_GetCurrentDisplayMode(0, &displayMode);
-	windowWidth = 800;// displayMode.w;
-	windowHeight = 600; // displayMode.h;
+	windowWidth = displayMode.w;
+	windowHeight = displayMode.h;
 
 	window = SDL_CreateWindow(
 		NULL,
@@ -81,6 +87,10 @@ void Game::ProcessInput()
 			{
 				isRunning = false;
 			}
+			if (sdlEvent.key.keysym.sym == SDLK_d)
+			{
+				isDebug = !isDebug;
+			}
 			break;
 		}
 	}
@@ -92,16 +102,26 @@ void Game::LoadLevel(int level)
 	// Add the systems that need to be processed in our game
 	registry->AddSystem<MovementSystem>();
 	registry->AddSystem<RenderSystem>();
+	registry->AddSystem<AnimationSystem>();
+	registry->AddSystem<CollisionSystem>();
+	registry->AddSystem<RenderColliderSystem>();
 
 	// Add assets tp the asset store
 	assetStore->AddTexture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
 	assetStore->AddTexture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
+	assetStore->AddTexture(renderer, "chopper-image", "./assets/images/chopper.png");
+	assetStore->AddTexture(renderer, "radar-image", "./assets/images/radar.png");
 	assetStore->AddTexture(renderer, "tilemap-image", "./assets/tilemaps/jungle.png");
 
 	int tileSize = 32;
-	double tileScale = 2.0;
 	int mapNumCols = 25;
 	int mapNumRows = 20;
+
+	// Calculate tile scaling factors to cover the screen width and height
+	/*double tileScaleX = static_cast<double>(windowWidth) / (mapNumCols * tileSize);
+	double tileScaleY = static_cast<double>(windowHeight) / (mapNumRows * tileSize);*/
+	double tileScaleX = 2.0;
+	double tileScaleY = 2.0;
 	
 	std::fstream mapFile;
 	mapFile.open("./assets/tilemaps/jungle.map");
@@ -118,22 +138,37 @@ void Game::LoadLevel(int level)
 			mapFile.ignore();
 
 			Entity tile = registry->CreateEntity();
-			tile.AddComponent<TransformComponent>(glm::vec2(x * (tileScale * tileSize), y * (tileScale * tileSize)), glm::vec2(tileScale, tileScale), 0.0);
+			tile.AddComponent<TransformComponent>(glm::vec2(x * (tileScaleX * tileSize), y * (tileScaleY * tileSize)), glm::vec2(tileScaleX, tileScaleY), 0.0);
 			tile.AddComponent<SpriteComponent>("tilemap-image", tileSize, tileSize, 0, srcRectX, srcRectY);
 		}
 	}
 	mapFile.close();
 
 	// Create an entity
+	Entity chopper = registry->CreateEntity();
+	chopper.AddComponent<TransformComponent>(glm::vec2(100.0, 100.0), glm::vec2(1.0, 1.0), 0.0);
+	chopper.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
+	chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 1);
+	chopper.AddComponent<AnimationComponent>(2, 5, true);
+
+	Entity radar = registry->CreateEntity();
+	radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 75, 10.0), glm::vec2(1.0, 1.0), 0.0);
+	radar.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
+	radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 2);
+	radar.AddComponent<AnimationComponent>(8, 5, true);
+
 	Entity tank = registry->CreateEntity();
-	tank.AddComponent<TransformComponent>(glm::vec2(10.0, 10.0), glm::vec2(1.0, 1.0), 0.0);
-	tank.AddComponent<RigidBodyComponent>(glm::vec2(30.0, 0.0));
+	tank.AddComponent<TransformComponent>(glm::vec2(500.0, 10.0), glm::vec2(1.0, 1.0), 0.0);
+	tank.AddComponent<RigidBodyComponent>(glm::vec2(-30.0, 0.0));
 	tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 2);
+	tank.AddComponent<BoxColliderComponent>(32, 32);
 
 	Entity truck = registry->CreateEntity();
 	truck.AddComponent<TransformComponent>(glm::vec2(10.0, 10.0), glm::vec2(1.0, 1.0), 0.0);
 	truck.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 00.0));
 	truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 1);
+	truck.AddComponent<BoxColliderComponent>(32, 32);
+
 }
 
 
@@ -163,6 +198,9 @@ void Game::Update()
 
 	// Invoke all the systems to needs to update
 	registry->GetSystem<MovementSystem>().Update(deltaTime);
+	registry->GetSystem<AnimationSystem>().Update();
+	registry->GetSystem<CollisionSystem>().Update();
+
 }
 
 void Game::Render()
@@ -172,6 +210,12 @@ void Game::Render()
 
 	// Invoke all the systems that needs to render
 	registry->GetSystem<RenderSystem>().Update(renderer, assetStore);
+
+	if (isDebug)
+	{
+		registry->GetSystem<RenderColliderSystem>().Update(renderer);
+
+	}
 
 	SDL_RenderPresent(renderer);
 }
