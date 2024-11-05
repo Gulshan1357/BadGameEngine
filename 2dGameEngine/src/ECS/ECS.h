@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <typeindex>
 #include <set>
+#include <deque>
 #include <memory>
 #include "../Logger/Logger.h"
 #include "../Components/TransformComponent.h"
@@ -41,6 +42,7 @@ private:
 public:
 	Entity(int id): id(id) {}
 	Entity(const Entity& entity) = default;
+	void Kill();
 	int GetId() const;
 	
 	Entity& operator =(const Entity& other) = default;
@@ -164,6 +166,9 @@ private:
 	std::set<Entity> entitiesToBeAdded;
 	std::set<Entity> entitiesToBeKilled;
 
+	// List of free entity ids that were previously removed
+	std::deque<int> freeIds;
+
 public:
 	Registry()
 	{
@@ -180,6 +185,7 @@ public:
 
 	// Entity Management
 	Entity CreateEntity();
+	void KillEntity(Entity entity);
 
 	// Component management
 	template <typename TComponent, typename ...TArgs> void AddComponent(Entity entity, TArgs&& ...args);
@@ -193,8 +199,9 @@ public:
 	template <typename TSystem> bool HasSystem() const;
 	template <typename TSystem> TSystem GetSystem() const;
 
-	// Check the component signature of an entity and add the entity to the systems that are interested in it
+	// Add and remove entities fromm their system
 	void AddEntityToSystems(Entity entity);
+	void RemoveEntityFromSystem(Entity entity);
 };
 
 template <typename TComponent>
