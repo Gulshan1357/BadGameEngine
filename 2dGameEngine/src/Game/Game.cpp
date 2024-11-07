@@ -12,11 +12,14 @@
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/RenderColliderSystem.h"
+#include "../Systems/DamageSystem.h"
+#include "../Systems/KeyboardControlSystem.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <glm/glm.hpp>
 #include <iostream>
 #include <fstream>
+#include "../Events/KeyPressedEvent.h"
 
 Game::Game()
 {
@@ -24,6 +27,7 @@ Game::Game()
 	isDebug = false;
 	registry = std::make_unique<Registry>();
 	assetStore = std::make_unique<AssetStore>();
+	eventBus = std::make_unique<EventBus>();
 	Logger::Log("Game constructor called");
 }
 
@@ -91,6 +95,7 @@ void Game::ProcessInput()
 			{
 				isDebug = !isDebug;
 			}
+			eventBus->EmitEvent<KeyPressedEvent>(sdlEvent.key.keysym.sym);
 			break;
 		}
 	}
@@ -105,6 +110,8 @@ void Game::LoadLevel(int level)
 	registry->AddSystem<AnimationSystem>();
 	registry->AddSystem<CollisionSystem>();
 	registry->AddSystem<RenderColliderSystem>();
+	registry->AddSystem<DamageSystem>();
+	registry->AddSystem<KeyboardControlSystem>();
 
 	// Add assets tp the asset store
 	assetStore->AddTexture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
@@ -193,14 +200,20 @@ void Game::Update()
 	// Store the current frame time
 	millisecsPreviousFrame = SDL_GetTicks();
 
-	// Update the registry to process the entities that are wiaitn g to be create/deleted
+	// Reset all event handlers for the current frame
+	eventBus->Reset();
+
+	// Perform the subscription of the events for all systems
+	registry->GetSystem<DamageSystem>().SubscribeToEvents(eventBus);
+	registry->GetSystem<KeyboardControlSystem>().SubscribeToEvents(eventBus);
+
+	// Update the registry to process the entities that are waiting to be created/deleted
 	registry->Update();
 
 	// Invoke all the systems to needs to update
 	registry->GetSystem<MovementSystem>().Update(deltaTime);
 	registry->GetSystem<AnimationSystem>().Update();
-	registry->GetSystem<CollisionSystem>().Update();
-
+	registry->GetSystem<CollisionSystem>().Update(eventBus);
 }
 
 void Game::Render()

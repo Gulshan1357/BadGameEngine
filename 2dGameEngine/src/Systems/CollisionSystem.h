@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../ECS/ECS.h"
+#include "../EventBus/EventBus.h"
+#include "../Events/CollisionEvent.h"
 #include "../Components/BoxColliderComponent.h"
 #include "../Components/TransformComponent.h"
 
@@ -13,7 +15,7 @@ public:
 		RequireComponent<TransformComponent>();
 	}
 
-	void Update()
+	void Update(std::unique_ptr<EventBus>& eventBus)
 	{
 		auto entities = GetSystemEntities();
 
@@ -53,8 +55,8 @@ public:
 				if (collisionHappened)
 				{
 					Logger::Log("Entity " + std::to_string(a.GetId()) + " is colliding with entity " + std::to_string(b.GetId()));
+					eventBus->EmitEvent<CollisionEvent>(a, b);
 
-					// TODO: emit an event....
 				}
 
 			}
