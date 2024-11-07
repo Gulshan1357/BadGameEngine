@@ -197,7 +197,7 @@ public:
 	template <typename TSystem, typename ...TArgs> void AddSystem(TArgs&& ...args);
 	template <typename TSystem> void RemoveSystem();
 	template <typename TSystem> bool HasSystem() const;
-	template <typename TSystem> TSystem GetSystem() const;
+	template <typename TSystem> TSystem& GetSystem() const;
 
 	// Add and remove entities fromm their system
 	void AddEntityToSystems(Entity entity);
@@ -233,7 +233,7 @@ bool Registry::HasSystem() const
 }
 
 template <typename TSystem> 
-TSystem Registry::GetSystem() const
+TSystem& Registry::GetSystem() const
 {
 	auto system = systems.find(std::type_index(typeid(TSystem)));
 	return *(std::static_pointer_cast<TSystem>(system->second));

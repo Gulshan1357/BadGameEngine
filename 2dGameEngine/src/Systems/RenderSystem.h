@@ -16,7 +16,7 @@ public:
 		RequireComponent<SpriteComponent>();
 	}
 
-	void Update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore)
+	void Update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, SDL_Rect& camera)
 	{
 		// Currently we are sorting entity array at every frame but in future we might want to group the arrays differently to make this more performant
 		
@@ -55,8 +55,8 @@ public:
 
 			// Set the destination rectangle with the x,y position to be rendered
 			SDL_Rect dstRect = {
-				static_cast<int>(transform.position.x),
-				static_cast<int>(transform.position.y),
+				static_cast<int>(transform.position.x - (sprite.isFixed ? 0 : camera.x)),
+				static_cast<int>(transform.position.y - (sprite.isFixed ? 0 : camera.y)),
 				static_cast<int>(sprite.width * transform.scale.x),
 				static_cast<int>(sprite.height * transform.scale.y)
 			};
